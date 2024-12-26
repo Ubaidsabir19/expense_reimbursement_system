@@ -1,6 +1,7 @@
 package com.seamless.expense_reimbursement_system.service;
 import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.repository.*;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,13 +45,17 @@ public class Services {
     }
 
     // Expense Creation by Employee Method
-    public Expense createExpense(Expense expense){
+    public Expense createExpense(int employeeId, Expense expense){
+
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
+
         ExpenseStatus newStatus = new ExpenseStatus();
         newStatus.setName("Pending");
         newStatus.setStatus((byte) 0);
         ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
         expense.setStatus(savedStatus);
-
+        expense.setEmployee(employee);
         expense.setApprovalDate(null);
         return expenseRepository.save(expense);
     }
@@ -94,9 +99,4 @@ public class Services {
         expense.setStatus(expenseStatus);
         expenseRepository.save(expense);
     }
-
-
-
-
-
 }

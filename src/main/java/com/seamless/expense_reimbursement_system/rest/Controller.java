@@ -47,15 +47,12 @@ public class Controller {
     }
 
     // Expense Creation
-    @PostMapping("/expense")
-    public ResponseEntity<Expense> createExpenseStatus(@RequestBody Expense expense){
+    @PostMapping("employee/{employeeId}/expense")
+    public ResponseEntity<Expense> createExpenseStatus(@PathVariable int employeeId, @RequestBody Expense expense){
         if (expense.getSubmitDate() == null) {
             expense.setSubmitDate(LocalDateTime.now());
         }
-//        if (expense.getApprovalDate() == null) {
-//            expense.setApprovalDate(LocalDateTime.now().minusDays(5));
-//        }
-        Expense savedExpense = service.createExpense(expense);
+        Expense savedExpense = service.createExpense(employeeId,expense);
         return ResponseEntity.ok(savedExpense);
     }
 
@@ -99,7 +96,6 @@ public class Controller {
             service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName,status);
             return ResponseEntity.ok("Status Updated Successfully");
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
     }
