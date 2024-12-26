@@ -46,11 +46,6 @@ public class Controller {
         return service.createCategories(categories);
     }
 
-    @PostMapping("/expense-status")
-    public ExpenseStatus createExpenseStatus(@RequestBody ExpenseStatus expenseStatus){
-        return service.createExpenseStatus(expenseStatus);
-    }
-
     // Expense Creation
     @PostMapping("/expense")
     public ResponseEntity<Expense> createExpenseStatus(@RequestBody Expense expense){
@@ -60,6 +55,7 @@ public class Controller {
         if (expense.getApprovalDate() == null) {
             expense.setApprovalDate(LocalDateTime.now().minusDays(5));
         }
+
         Expense savedExpense = service.createExpense(expense);
         return ResponseEntity.ok(savedExpense);
     }

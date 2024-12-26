@@ -43,13 +43,14 @@ public class Services {
         return categoriesRepository.save(categories);
     }
 
-    public ExpenseStatus createExpenseStatus(ExpenseStatus expenseStatus){
-        return expenseStatusRepository.save(expenseStatus);
-    }
-
 
     // Expense Creation by Employee Method
     public Expense createExpense(Expense expense){
+        ExpenseStatus newStatus = new ExpenseStatus();
+        newStatus.setName("Pending");
+        newStatus.setStatus((byte) 0);
+        ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+        expense.setStatus(savedStatus);
         return expenseRepository.save(expense);
     }
 
