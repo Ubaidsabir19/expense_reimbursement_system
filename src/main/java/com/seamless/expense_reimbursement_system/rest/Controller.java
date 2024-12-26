@@ -55,7 +55,6 @@ public class Controller {
         if (expense.getApprovalDate() == null) {
             expense.setApprovalDate(LocalDateTime.now().minusDays(5));
         }
-
         Expense savedExpense = service.createExpense(expense);
         return ResponseEntity.ok(savedExpense);
     }
@@ -96,6 +95,7 @@ public class Controller {
             String statusId = request.get("status_id");
             String statusName=request.get("status_name");
             byte status = Byte.parseByte(request.get("status"));
+
             service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName,status);
             return ResponseEntity.ok("Status Updated Successfully");
         } catch (Exception e) {

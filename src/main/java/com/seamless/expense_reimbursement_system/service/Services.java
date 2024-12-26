@@ -83,7 +83,7 @@ public class Services {
         ExpenseStatus expenseStatus = expenseStatusRepository.findById(statusId)
                 .orElseThrow(() -> new IllegalArgumentException("Status not found with ID: " + statusId));
 
-        if (name != null && !name.isEmpty()) {
+        if (name != null && !name.isEmpty() || status > 0) {
             expenseStatus.setName(name);
             expenseStatus.setStatus(status);
             expenseStatusRepository.save(expenseStatus);
