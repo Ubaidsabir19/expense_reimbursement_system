@@ -1,12 +1,10 @@
 package com.seamless.expense_reimbursement_system.rest;
-
 import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.service.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -21,29 +19,29 @@ public class Controller {
     public Services service;
 
     @GetMapping("/allEmployee")
-    public List<Employee> getAllEmployee(){
-        return service.getAllEmployees();
+    public ResponseEntity<List<Employee>> getAllEmployee(){
+        return ResponseEntity.ok(service.getAllEmployees());
     }
 
     @GetMapping("/allRoles")
-    public List<Role> getAllRoles(){
-        return service.getAllRoles();
+    public ResponseEntity<List<Role>> getAllRoles(){
+        return ResponseEntity.ok(service.getAllRoles());
     }
 
     // Post End Points
     @PostMapping("/employee")
-    public Employee createEmployee(@RequestBody Employee employee){
-        return service.createEmployee(employee);
+    public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee){
+        return ResponseEntity.ok(service.createEmployee(employee));
     }
 
     @PostMapping("/role")
-    public Role createRole(@RequestBody Role role){
-        return service.createRole(role);
+    public ResponseEntity<Role> createRole(@RequestBody Role role){
+        return ResponseEntity.ok(service.createRole(role));
     }
 
     @PostMapping("/category")
-    public Categories createCategories(@RequestBody Categories categories){
-        return service.createCategories(categories);
+    public ResponseEntity<Categories> createCategories(@RequestBody Categories categories){
+        return ResponseEntity.ok(service.createCategories(categories));
     }
 
     // Expense Creation
@@ -60,7 +58,7 @@ public class Controller {
     @GetMapping("/allExpanses")
     public ResponseEntity<List<Expense>> getAllExpanses() {
         List<Expense> expenses = service.getAllExpanses().stream()
-                .filter(n -> "Pending".equals(n.getStatus().getName()))
+                .filter(n -> n.getStatus() != null && "Pending".equals(n.getStatus().getName()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(expenses);
     }
@@ -68,8 +66,7 @@ public class Controller {
     // Get Expanses by Status
     @GetMapping("/ExpanseByStatus")
     public ResponseEntity<List<Expense>> getExpanseByStatus(@RequestParam String name) {
-        List<Expense> filteredExpenses = service.getExpanseByStatus(name);
-        return ResponseEntity.ok(filteredExpenses);
+        return ResponseEntity.ok(service.getExpanseByStatus(name));
     }
 
     // Get Expanse Status with employee id and date range
@@ -80,8 +77,7 @@ public class Controller {
         if (employeeId == 0 || date == null) {
             return ResponseEntity.badRequest().body(Collections.emptyList());
         }
-        List<Expense> expenses = service.getExpensesStatus(employeeId, date);
-        return ResponseEntity.ok(expenses);
+        return ResponseEntity.ok(service.getExpensesStatus(employeeId, date));
     }
 
     @PatchMapping("/updateExpenseStatus")
@@ -90,7 +86,7 @@ public class Controller {
         try {
             String expenseId = request.get("expenseId");
             String statusId = request.get("status_id");
-            String statusName=request.get("status_name");
+            String statusName = request.get("status_name");
             byte status = Byte.parseByte(request.get("status"));
 
             service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName,status);
@@ -99,9 +95,4 @@ public class Controller {
             return ResponseEntity.notFound().build();
         }
     }
-
-
-
-
-
 }

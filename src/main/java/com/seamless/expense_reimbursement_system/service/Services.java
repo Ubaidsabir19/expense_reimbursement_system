@@ -22,24 +22,27 @@ public class Services {
     @Autowired
     public ExpenseStatusRepository expenseStatusRepository;
 
-    // get Functions
+    // get all employees
     public List<Employee> getAllEmployees(){
         return employeeRepository.findAll();
     }
 
+    // get all roles
     public List<Role> getAllRoles(){
         return roleRepository.findAll();
     }
 
-    // Create Functions
+    // create employee
     public Employee createEmployee(Employee employee){
         return employeeRepository.save(employee);
     }
 
+    // create role
     public Role createRole(Role role){
         return roleRepository.save(role);
     }
 
+    // create category
     public Categories createCategories(Categories categories){
         return categoriesRepository.save(categories);
     }
@@ -54,8 +57,10 @@ public class Services {
         newStatus.setName("Pending");
         newStatus.setStatus((byte) 0);
         ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+
         expense.setStatus(savedStatus);
         expense.setEmployee(employee);
+
         expense.setApprovalDate(null);
         return expenseRepository.save(expense);
     }

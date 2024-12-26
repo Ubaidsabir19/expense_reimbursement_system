@@ -11,13 +11,13 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "role_id", referencedColumnName = "id")
     private Role role;
 
