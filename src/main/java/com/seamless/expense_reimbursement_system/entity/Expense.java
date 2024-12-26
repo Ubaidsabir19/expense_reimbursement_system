@@ -1,7 +1,6 @@
 package com.seamless.expense_reimbursement_system.entity;
 
 import jakarta.persistence.*;
-import jdk.jshell.Snippet;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;

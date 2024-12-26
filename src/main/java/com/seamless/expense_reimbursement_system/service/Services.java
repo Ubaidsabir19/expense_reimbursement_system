@@ -43,7 +43,6 @@ public class Services {
         return categoriesRepository.save(categories);
     }
 
-
     // Expense Creation by Employee Method
     public Expense createExpense(Expense expense){
         ExpenseStatus newStatus = new ExpenseStatus();
@@ -51,6 +50,8 @@ public class Services {
         newStatus.setStatus((byte) 0);
         ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
         expense.setStatus(savedStatus);
+
+        expense.setApprovalDate(null);
         return expenseRepository.save(expense);
     }
 
@@ -89,6 +90,7 @@ public class Services {
             expenseStatusRepository.save(expenseStatus);
         }
 
+        expense.setApprovalDate(LocalDateTime.now());
         expense.setStatus(expenseStatus);
         expenseRepository.save(expense);
     }

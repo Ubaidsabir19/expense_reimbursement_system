@@ -52,9 +52,9 @@ public class Controller {
         if (expense.getSubmitDate() == null) {
             expense.setSubmitDate(LocalDateTime.now());
         }
-        if (expense.getApprovalDate() == null) {
-            expense.setApprovalDate(LocalDateTime.now().minusDays(5));
-        }
+//        if (expense.getApprovalDate() == null) {
+//            expense.setApprovalDate(LocalDateTime.now().minusDays(5));
+//        }
         Expense savedExpense = service.createExpense(expense);
         return ResponseEntity.ok(savedExpense);
     }
