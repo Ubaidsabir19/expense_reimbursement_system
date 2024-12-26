@@ -1,15 +1,11 @@
 package com.seamless.expense_reimbursement_system.service;
 import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.repository.*;
-import jakarta.transaction.Status;
-import jdk.jshell.Snippet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class Services {
@@ -79,17 +75,24 @@ public class Services {
     }
 
     // update expanse status
-    public Expense updateExpenseStatus(int expenseId, ExpenseStatus status) {
-        Optional<Expense> optionalExpense = expenseRepository.findById(expenseId);
+    public void updateExpenseStatus(int expenseId, int statusId, String name, byte status) {
+        Expense expense = expenseRepository.findById(expenseId)
+                .orElseThrow(() -> new IllegalArgumentException("Expense not found with ID: " + expenseId));
 
-        if (optionalExpense.isEmpty()) {
-            throw new IllegalArgumentException("Expense not found");
+        ExpenseStatus expenseStatus = expenseStatusRepository.findById(statusId)
+                .orElseThrow(() -> new IllegalArgumentException("Status not found with ID: " + statusId));
+
+        if (name != null && !name.isEmpty()) {
+            expenseStatus.setName(name);
+            expenseStatus.setStatus(status);
+            expenseStatusRepository.save(expenseStatus);
         }
 
-        Expense expense = optionalExpense.get();
-        expense.setStatus(status);
-        return expenseRepository.save(expense);
+        expense.setStatus(expenseStatus);
+        expenseRepository.save(expense);
     }
+
+
 
 
 

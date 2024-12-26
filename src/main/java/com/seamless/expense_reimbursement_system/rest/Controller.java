@@ -2,16 +2,15 @@ package com.seamless.expense_reimbursement_system.rest;
 
 import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.service.Services;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.parser.Entity;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -52,7 +51,6 @@ public class Controller {
         return service.createExpenseStatus(expenseStatus);
     }
 
-
     // Expense Creation
     @PostMapping("/expense")
     public ResponseEntity<Expense> createExpenseStatus(@RequestBody Expense expense){
@@ -85,24 +83,27 @@ public class Controller {
     // Get Expanse Status with employee id and date range
     @GetMapping("/ExpanseStatusByDate")
     public ResponseEntity<List<Expense>> getExpensesStatus(
-            @RequestParam(required = false) Integer employeeId,
+            @RequestParam Integer employeeId,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime date) {
-//        if (employeeId == 0 || date == null) {
-//            return ResponseEntity.badRequest().body(Collections.emptyList());
-//        }
+        if (employeeId == 0 || date == null) {
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
         List<Expense> expenses = service.getExpensesStatus(employeeId, date);
         return ResponseEntity.ok(expenses);
     }
 
     @PatchMapping("/updateExpenseStatus")
-    public ResponseEntity<Expense> updateExpenseStatus(
-            @RequestParam int expenseId,
-            @RequestParam ExpenseStatus status) {
-
+    public ResponseEntity<String> updateExpenseStatus(
+            @RequestBody Map<String, String> request) {
         try {
-            Expense updatedExpense = service.updateExpenseStatus(expenseId, status);
-            return ResponseEntity.ok(updatedExpense);
-        } catch (IllegalArgumentException e) {
+            String expenseId = request.get("expenseId");
+            String statusId = request.get("status_id");
+            String statusName=request.get("status_name");
+            byte status = Byte.parseByte(request.get("status"));
+            service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName,status);
+            return ResponseEntity.ok("Status Updated Successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.notFound().build();
         }
     }

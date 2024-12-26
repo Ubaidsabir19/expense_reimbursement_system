@@ -15,5 +15,4 @@ public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
     @Query("SELECT e FROM Expense e WHERE e.employee.id = :employeeId AND e.submitDate >= :date")
     List<Expense> findByEmployeeIdAndSubmitDateAfter(@Param("employeeId") int employeeId,
                                                      @Param("date") LocalDateTime date);
-
 }
