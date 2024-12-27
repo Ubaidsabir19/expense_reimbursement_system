@@ -21,6 +21,10 @@ public class Services {
     public CategoriesRepository categoriesRepository;
     @Autowired
     public ExpenseStatusRepository expenseStatusRepository;
+    @Autowired
+    public CategoryPackageRepository categoryPackageRepository;
+    @Autowired
+    public RoleCategoryPackageRepository roleCategoryPackageRepository;
 
     // get all employees
     public List<Employee> getAllEmployees(){
@@ -39,31 +43,49 @@ public class Services {
 
     // create role
     public Role createRole(Role role){
+        role.setStatus((byte) 1);
         return roleRepository.save(role);
     }
 
     // create category
     public Categories createCategories(Categories categories){
+        categories.setStatus((byte) 1);
         return categoriesRepository.save(categories);
     }
 
     // Expense Creation by Employee Method
-    public Expense createExpense(int employeeId, Expense expense){
+    public Expense createExpense(int employeeId, Expense expense) {
 
-        Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
+        try {
+            Employee employee = employeeRepository.findById(employeeId)
+                    .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
-        ExpenseStatus newStatus = new ExpenseStatus();
-        newStatus.setName("Pending");
-        newStatus.setStatus((byte) 0);
-        ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+            RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
+                    .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
-        expense.setStatus(savedStatus);
-        expense.setEmployee(employee);
+            CategoryPackage cPkg = rcPkg.getCategoryPackage();
 
-        expense.setApprovalDate(null);
-        return expenseRepository.save(expense);
+            if (expense.getAmount() > cPkg.getExpenseLimit()) {
+                throw new IllegalArgumentException(
+                        "Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
+            }
+
+            ExpenseStatus newStatus = new ExpenseStatus();
+            newStatus.setName("Pending");
+            newStatus.setStatus((byte) 1);
+            ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+
+            expense.setStatus(savedStatus);
+            expense.setEmployee(employee);
+
+            expense.setApprovalDate(null);
+
+            return expenseRepository.save(expense);
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage());
+        }
     }
+
 
     // Getting list by Manager
     public List<Expense> getAllExpanses(){
@@ -71,6 +93,7 @@ public class Services {
     }
 
     // Get by status
+    // Use employee id ------- modification
     public List<Expense> getExpanseByStatus(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Status name must not be null or empty");
@@ -87,16 +110,15 @@ public class Services {
     }
 
     // update expanse status
-    public void updateExpenseStatus(int expenseId, int statusId, String name, byte status) {
+    public void updateExpenseStatus(int expenseId, int statusId, String name) {
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new IllegalArgumentException("Expense not found with ID: " + expenseId));
 
         ExpenseStatus expenseStatus = expenseStatusRepository.findById(statusId)
                 .orElseThrow(() -> new IllegalArgumentException("Status not found with ID: " + statusId));
 
-        if (name != null && !name.isEmpty() || status > 0) {
+        if (name != null && !name.isEmpty()) {
             expenseStatus.setName(name);
-            expenseStatus.setStatus(status);
             expenseStatusRepository.save(expenseStatus);
         }
 
@@ -104,4 +126,15 @@ public class Services {
         expense.setStatus(expenseStatus);
         expenseRepository.save(expense);
     }
+
+    // Create Category Package
+    public CategoryPackage addCategoryPackage(CategoryPackage categoryPackage){
+        return categoryPackageRepository.save(categoryPackage);
+    }
+
+    // Create Category Against Role
+    public RoleCategoryPackage addRoleCategoryPackage(RoleCategoryPackage roleCategoryPackage){
+        return roleCategoryPackageRepository.save(roleCategoryPackage);
+    }
+
 }

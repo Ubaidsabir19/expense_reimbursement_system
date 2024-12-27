@@ -87,12 +87,29 @@ public class Controller {
             String expenseId = request.get("expenseId");
             String statusId = request.get("status_id");
             String statusName = request.get("status_name");
-            byte status = Byte.parseByte(request.get("status"));
 
-            service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName,status);
+            service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName);
             return ResponseEntity.ok("Status Updated Successfully");
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/CreateCategoryPackage")
+    public ResponseEntity<CategoryPackage> createCategoryPackage(@RequestBody CategoryPackage categoryPackage){
+        try {
+            return ResponseEntity.ok(service.addCategoryPackage(categoryPackage));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @PostMapping("/CreateCategoryAgainstPackage")
+    public ResponseEntity<RoleCategoryPackage> createRoleCategoryPackage(@RequestBody RoleCategoryPackage roleCategoryPackage){
+        try {
+            return ResponseEntity.ok(service.addRoleCategoryPackage(roleCategoryPackage));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
