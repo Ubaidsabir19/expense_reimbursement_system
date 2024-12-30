@@ -68,18 +68,39 @@ public class Services {
             int totalAvailedAmount = expenseRepository.findTotalExpensesByEmployeeId(employeeId);
             int remainingLimit = cPkg.getExpenseLimit() - totalAvailedAmount;
 
+            String statusName = (expense.getAmount() > cPkg.getExpenseLimit() || expense.getAmount() > remainingLimit)
+                ? "Rejected" : "Pending";
+
             // If enter amount > Expense Limit against role
             if (expense.getAmount() > cPkg.getExpenseLimit()) {
+                ExpenseStatus newStatus = new ExpenseStatus();
+                newStatus.setName(statusName);
+                newStatus.setStatus((byte) 1);
+                ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+
+                expense.setStatus(savedStatus);
+                expense.setEmployee(employee);
+                expense.setApprovalDate(null);
+                ResponseEntity.ok(expenseRepository.save(expense));
                 return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
             }
 
             // Validate if expense amount exceeds the remaining limit
             if (expense.getAmount() > remainingLimit) {
+                ExpenseStatus newStatus = new ExpenseStatus();
+                newStatus.setName(statusName);
+                newStatus.setStatus((byte) 1);
+                ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+
+                expense.setStatus(savedStatus);
+                expense.setEmployee(employee);
+                expense.setApprovalDate(null);
+                ResponseEntity.ok(expenseRepository.save(expense));
                 return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
             }
 
             ExpenseStatus newStatus = new ExpenseStatus();
-            newStatus.setName("Pending");
+            newStatus.setName(statusName);
             newStatus.setStatus((byte) 1);
             ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
 
@@ -89,14 +110,12 @@ public class Services {
             return ResponseEntity.ok(expenseRepository.save(expense));
     }
 
-
     // Getting list by Manager
     public List<Expense> getAllExpanses(){
         return expenseRepository.findAll();
     }
 
     // Get by status
-    // Use employee id ------- modification
     public List<Expense> getExpanseByStatus(String name) {
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Status name must not be null or empty");
@@ -140,6 +159,7 @@ public class Services {
         return roleCategoryPackageRepository.save(roleCategoryPackage);
     }
 
+    // Validate Expanse amount
     public boolean validateExpense(int roleId, int expenseAmount) {
         RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findById(roleId)
                 .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
