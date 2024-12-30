@@ -57,57 +57,46 @@ public class Services {
     // Expense Creation by Employee Method
     public ResponseEntity<Object> createExpense(int employeeId, Expense expense) {
 
-            Employee employee = employeeRepository.findById(employeeId)
+        Employee employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
-            RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
+        RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
                     .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
-            // get Category Pkg
-            CategoryPackage cPkg = rcPkg.getCategoryPackage();
-            int totalAvailedAmount = expenseRepository.findTotalExpensesByEmployeeId(employeeId);
-            int remainingLimit = cPkg.getExpenseLimit() - totalAvailedAmount;
+        // get Category Pkg
+        CategoryPackage cPkg = rcPkg.getCategoryPackage();
+        int totalAvailedAmount = expenseRepository.findTotalExpensesByEmployeeId(employeeId);
+        int remainingLimit = cPkg.getExpenseLimit() - totalAvailedAmount;
 
-            String statusName = (expense.getAmount() > cPkg.getExpenseLimit() || expense.getAmount() > remainingLimit)
+        String statusName = (expense.getAmount() > cPkg.getExpenseLimit() || expense.getAmount() > remainingLimit)
                 ? "Rejected" : "Pending";
 
-            // If enter amount > Expense Limit against role
-            if (expense.getAmount() > cPkg.getExpenseLimit()) {
-                ExpenseStatus newStatus = new ExpenseStatus();
-                newStatus.setName(statusName);
-                newStatus.setStatus((byte) 1);
-                ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+        // Initialize Status class
+        ExpenseStatus newStatus = new ExpenseStatus();
+        newStatus.setStatus((byte) 1);
 
-                expense.setStatus(savedStatus);
-                expense.setEmployee(employee);
-                expense.setApprovalDate(null);
-                ResponseEntity.ok(expenseRepository.save(expense));
-                return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
-            }
+        expense.setApprovalDate(null);
+        expense.setEmployee(employee);
 
-            // Validate if expense amount exceeds the remaining limit
-            if (expense.getAmount() > remainingLimit) {
-                ExpenseStatus newStatus = new ExpenseStatus();
-                newStatus.setName(statusName);
-                newStatus.setStatus((byte) 1);
-                ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
-
-                expense.setStatus(savedStatus);
-                expense.setEmployee(employee);
-                expense.setApprovalDate(null);
-                ResponseEntity.ok(expenseRepository.save(expense));
-                return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
-            }
-
-            ExpenseStatus newStatus = new ExpenseStatus();
+        // If enter amount > Expense Limit against role
+        if (expense.getAmount() > cPkg.getExpenseLimit()) {
             newStatus.setName(statusName);
-            newStatus.setStatus((byte) 1);
-            ExpenseStatus savedStatus = expenseStatusRepository.save(newStatus);
+            expense.setStatus(expenseStatusRepository.save(newStatus));
+            ResponseEntity.ok(expenseRepository.save(expense));
+            return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
+        }
 
-            expense.setStatus(savedStatus);
-            expense.setEmployee(employee);
-            expense.setApprovalDate(null);
-            return ResponseEntity.ok(expenseRepository.save(expense));
+        // Validate if expense amount exceeds the remaining limit
+        if (expense.getAmount() > remainingLimit) {
+            newStatus.setName(statusName);
+            expense.setStatus(expenseStatusRepository.save(newStatus));
+            ResponseEntity.ok(expenseRepository.save(expense));
+            return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
+        }
+
+        newStatus.setName(statusName);
+        expense.setStatus(expenseStatusRepository.save(newStatus));
+        return ResponseEntity.ok(expenseRepository.save(expense));
     }
 
     // Getting list by Manager
@@ -163,7 +152,9 @@ public class Services {
     public boolean validateExpense(int roleId, int expenseAmount) {
         RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findById(roleId)
                 .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
+
         CategoryPackage categoryPackage = roleCategoryPackage.getCategoryPackage();
+
         if (expenseAmount > categoryPackage.getExpenseLimit()) {
             throw new IllegalArgumentException("Expense amount exceeds the allowed limit for the role.");
         }
