@@ -7,7 +7,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -49,11 +48,11 @@ public class Controller {
 
     // Expense Creation
     @PostMapping("employee/{employeeId}/expense")
-    public ResponseEntity<Expense> createExpenseStatus(@PathVariable int employeeId, @RequestBody Expense expense){
+    public ResponseEntity<Object> createExpenseStatus(@PathVariable int employeeId, @RequestBody Expense expense){
         if (expense.getSubmitDate() == null) {
             expense.setSubmitDate(LocalDateTime.now());
         }
-        Expense savedExpense = service.createExpense(employeeId,expense);
+        ResponseEntity<Object> savedExpense = service.createExpense(employeeId,expense);
         return ResponseEntity.ok(savedExpense);
     }
 
@@ -83,6 +82,7 @@ public class Controller {
         return ResponseEntity.ok(service.getExpensesStatus(employeeId, date));
     }
 
+    // Update expense status
     @PatchMapping("/updateExpenseStatus")
     public ResponseEntity<String> updateExpenseStatus(@RequestBody Map<String, String> request) {
         try {
@@ -97,6 +97,7 @@ public class Controller {
         }
     }
 
+    // Create Category Pkg
     @PostMapping("/CreateCategoryPackage")
     public ResponseEntity<CategoryPackage> createCategoryPackage(@RequestBody CategoryPackage categoryPackage){
         try {
@@ -106,6 +107,7 @@ public class Controller {
         }
     }
 
+    // Create category Against Pkg
     @PostMapping("/CreateCategoryAgainstPackage")
     public ResponseEntity<RoleCategoryPackage> createRoleCategoryPackage(@RequestBody RoleCategoryPackage roleCategoryPackage){
         try {
@@ -115,6 +117,7 @@ public class Controller {
         }
     }
 
+    // Validate Expanse
     @PostMapping("/validate-expense")
     public boolean validateExpense(@RequestBody ValidateExpenseRequest request) {
         try {

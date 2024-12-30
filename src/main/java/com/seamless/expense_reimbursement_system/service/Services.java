@@ -3,6 +3,7 @@ import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.repository.*;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -54,23 +55,27 @@ public class Services {
     }
 
     // Expense Creation by Employee Method
-    public Expense createExpense(int employeeId, Expense expense) {
+    public ResponseEntity<Object> createExpense(int employeeId, Expense expense) {
 
-        try {
             Employee employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
-            // Get role id with the help of employee
             RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
                     .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
             // get Category Pkg
             CategoryPackage cPkg = rcPkg.getCategoryPackage();
+            int totalAvailedAmount = expenseRepository.findTotalExpensesByEmployeeId(employeeId);
+            int remainingLimit = cPkg.getExpenseLimit() - totalAvailedAmount;
 
             // If enter amount > Expense Limit against role
             if (expense.getAmount() > cPkg.getExpenseLimit()) {
-                throw new IllegalArgumentException(
-                        "Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
+                return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
+            }
+
+            // Validate if expense amount exceeds the remaining limit
+            if (expense.getAmount() > remainingLimit) {
+                return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
             }
 
             ExpenseStatus newStatus = new ExpenseStatus();
@@ -81,10 +86,7 @@ public class Services {
             expense.setStatus(savedStatus);
             expense.setEmployee(employee);
             expense.setApprovalDate(null);
-            return expenseRepository.save(expense);
-        } catch (Exception e) {
-            throw new RuntimeException(e.getMessage());
-        }
+            return ResponseEntity.ok(expenseRepository.save(expense));
     }
 
 
@@ -141,13 +143,10 @@ public class Services {
     public boolean validateExpense(int roleId, int expenseAmount) {
         RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findById(roleId)
                 .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
-
         CategoryPackage categoryPackage = roleCategoryPackage.getCategoryPackage();
-
         if (expenseAmount > categoryPackage.getExpenseLimit()) {
             throw new IllegalArgumentException("Expense amount exceeds the allowed limit for the role.");
         }
         return true;
     }
-
 }
