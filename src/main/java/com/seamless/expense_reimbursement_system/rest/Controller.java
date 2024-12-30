@@ -3,8 +3,11 @@ import com.seamless.expense_reimbursement_system.entity.*;
 import com.seamless.expense_reimbursement_system.service.Services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -81,8 +84,7 @@ public class Controller {
     }
 
     @PatchMapping("/updateExpenseStatus")
-    public ResponseEntity<String> updateExpenseStatus(
-            @RequestBody Map<String, String> request) {
+    public ResponseEntity<String> updateExpenseStatus(@RequestBody Map<String, String> request) {
         try {
             String expenseId = request.get("expenseId");
             String statusId = request.get("status_id");
@@ -109,7 +111,17 @@ public class Controller {
         try {
             return ResponseEntity.ok(service.addRoleCategoryPackage(roleCategoryPackage));
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
         }
     }
+
+    @PostMapping("/validate-expense")
+    public boolean validateExpense(@RequestBody ValidateExpenseRequest request) {
+        try {
+            return service.validateExpense(request.getRoleId(), request.getExpenseAmount());
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage(), e);
+        }
+    }
+
 }

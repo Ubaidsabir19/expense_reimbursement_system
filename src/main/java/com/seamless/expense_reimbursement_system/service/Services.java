@@ -60,11 +60,14 @@ public class Services {
             Employee employee = employeeRepository.findById(employeeId)
                     .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
+            // Get role id with the help of employee
             RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
                     .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
+            // get Category Pkg
             CategoryPackage cPkg = rcPkg.getCategoryPackage();
 
+            // If enter amount > Expense Limit against role
             if (expense.getAmount() > cPkg.getExpenseLimit()) {
                 throw new IllegalArgumentException(
                         "Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
@@ -77,9 +80,7 @@ public class Services {
 
             expense.setStatus(savedStatus);
             expense.setEmployee(employee);
-
             expense.setApprovalDate(null);
-
             return expenseRepository.save(expense);
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
@@ -135,6 +136,18 @@ public class Services {
     // Create Category Against Role
     public RoleCategoryPackage addRoleCategoryPackage(RoleCategoryPackage roleCategoryPackage){
         return roleCategoryPackageRepository.save(roleCategoryPackage);
+    }
+
+    public boolean validateExpense(int roleId, int expenseAmount) {
+        RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findById(roleId)
+                .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
+
+        CategoryPackage categoryPackage = roleCategoryPackage.getCategoryPackage();
+
+        if (expenseAmount > categoryPackage.getExpenseLimit()) {
+            throw new IllegalArgumentException("Expense amount exceeds the allowed limit for the role.");
+        }
+        return true;
     }
 
 }
