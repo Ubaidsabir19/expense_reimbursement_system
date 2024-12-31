@@ -21,7 +21,7 @@ public class Controller {
     public Services service;
 
     @GetMapping("/allEmployees")
-    public ResponseEntity<List<Employee>> getAllEmployee(){
+    public ResponseEntity<Object> getAllEmployee(){
         return ResponseEntity.ok(service.getAllEmployees());
     }
 

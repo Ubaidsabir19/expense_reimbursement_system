@@ -1,7 +1,7 @@
 package com.seamless.expense_reimbursement_system.service;
 import com.seamless.expense_reimbursement_system.entity.*;
+import com.seamless.expense_reimbursement_system.exception_helper.ResourceNotFoundException;
 import com.seamless.expense_reimbursement_system.repository.*;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -58,10 +58,10 @@ public class Services {
     public ResponseEntity<Object> createExpense(int employeeId, Expense expense) {
 
         Employee employee = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
 
         RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
-                .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
+                .orElseThrow(() -> new ResourceNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
         // Get category package
         CategoryPackage cPkg = rcPkg.getCategoryPackage();
@@ -75,7 +75,7 @@ public class Services {
         // Check if expense exceeds allowed limit for the role
         if (expense.getAmount() > cPkg.getExpenseLimit()) {
             ExpenseStatus rejectedStatus = expenseStatusRepository.findById(3)
-                    .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 3"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Status not found with ID: 3"));
             expense.setStatus(rejectedStatus);
             expenseRepository.save(expense);
             return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
@@ -84,7 +84,7 @@ public class Services {
         // Check if expense exceeds the remaining limit
         if (expense.getAmount() > remainingLimit) {
             ExpenseStatus rejectedStatus = expenseStatusRepository.findById(3)
-                    .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 3"));
+                    .orElseThrow(() -> new ResourceNotFoundException("Status not found with ID: 3"));
             expense.setStatus(rejectedStatus);
             expenseRepository.save(expense);
             return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
@@ -92,7 +92,7 @@ public class Services {
 
         // Assign pending status 1
         ExpenseStatus pendingStatus = expenseStatusRepository.findById(1)
-                .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 1"));
+                .orElseThrow(() -> new ResourceNotFoundException("Status not found with ID: 1"));
         expense.setStatus(pendingStatus);
         expenseRepository.save(expense);
         return ResponseEntity.ok("Expense submitted successfully and is pending approval.");
@@ -119,10 +119,10 @@ public class Services {
     // update expanse status
     public void updateExpenseStatus(int expenseId, int statusId) {
         Expense expense = expenseRepository.findById(expenseId)
-                .orElseThrow(() -> new IllegalArgumentException("Expense not found with ID: " + expenseId));
+                .orElseThrow(() -> new ResourceNotFoundException("Expense not found with ID: " + expenseId));
 
         ExpenseStatus expenseStatus = expenseStatusRepository.findById(statusId)
-                .orElseThrow(() -> new IllegalArgumentException("Status not found with ID: " + statusId));
+                .orElseThrow(() -> new ResourceNotFoundException("Status not found with ID: " + statusId));
 
         expense.setApprovalDate(LocalDateTime.now());
         expense.setStatus(expenseStatus);
@@ -142,7 +142,7 @@ public class Services {
     // Validate Expanse amount
     public boolean validateExpense(int roleId, int expenseAmount) {
         RoleCategoryPackage roleCategoryPackage = roleCategoryPackageRepository.findById(roleId)
-                .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
+                .orElseThrow(() -> new ResourceNotFoundException("No RoleCategoryPackage found for role ID: " + roleId));
 
         CategoryPackage categoryPackage = roleCategoryPackage.getCategoryPackage();
 
@@ -151,9 +151,6 @@ public class Services {
         }
         return true;
     }
-
-    // Remaining work
-    // History endpoint sorted by category & by date
 
 
 }
