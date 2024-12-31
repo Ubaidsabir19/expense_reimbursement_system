@@ -1,8 +1,11 @@
 package com.seamless.expense_reimbursement_system.entity;
 
 import jakarta.persistence.*;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "category_package")
 public class CategoryPackage {
@@ -20,37 +23,4 @@ public class CategoryPackage {
     @ManyToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Categories category;
-
-    // Getters and Setters
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getPackageName() {
-        return packageName;
-    }
-
-    public void setPackageName(String packageName) {
-        this.packageName = packageName;
-    }
-
-    public int getExpenseLimit() {
-        return expenseLimit;
-    }
-
-    public void setExpenseLimit(int expenseLimit) {
-        this.expenseLimit = expenseLimit;
-    }
-
-    public Categories getCategory() {
-        return category;
-    }
-
-    public void setCategory(Categories category) {
-        this.category = category;
-    }
 }

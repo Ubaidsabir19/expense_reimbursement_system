@@ -1,8 +1,11 @@
 package com.seamless.expense_reimbursement_system.entity;
 
 import jakarta.persistence.*;
-import java.util.Objects;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 @Table(name = "RoleCategoryPackage")
 public class RoleCategoryPackage {
@@ -18,29 +21,4 @@ public class RoleCategoryPackage {
     @ManyToOne
     @JoinColumn(name = "category_package_id", referencedColumnName = "id")
     private CategoryPackage categoryPackage;
-
-    // Getters and Setters
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public Role getRole() {
-        return role;
-    }
-
-    public void setRole(Role role) {
-        this.role = role;
-    }
-
-    public CategoryPackage getCategoryPackage() {
-        return categoryPackage;
-    }
-
-    public void setCategoryPackage(CategoryPackage categoryPackage) {
-        this.categoryPackage = categoryPackage;
-    }
 }
