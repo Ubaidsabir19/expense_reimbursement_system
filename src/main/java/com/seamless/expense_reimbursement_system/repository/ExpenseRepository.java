@@ -7,10 +7,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ExpenseRepository extends JpaRepository<Expense, Integer> {
-    @Query("SELECT e FROM Expense e WHERE LOWER(e.status.name) = LOWER(:name)")
-    List<Expense> findByStatusName(@Param("name") String name);
+    @Query("SELECT e FROM Expense e WHERE e.status.id = :statusId ORDER BY e.submitDate DESC")
+    List<Expense> findByStatusId(@Param("statusId") int statusId);
 
-    @Query("SELECT e FROM Expense e WHERE e.employee.id = :employeeId AND e.submitDate >= :date")
+    @Query("SELECT e FROM Expense e WHERE e.employee.id = :employeeId AND e.submitDate >= :date ORDER BY e.submitDate DESC")
     List<Expense> findByEmployeeIdAndSubmitDateAfter(@Param("employeeId") int employeeId,
                                                      @Param("date") LocalDateTime date);
 

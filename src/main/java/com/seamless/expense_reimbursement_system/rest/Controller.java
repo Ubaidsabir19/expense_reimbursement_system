@@ -14,13 +14,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("/api")
 public class Controller {
 
     @Autowired
     public Services service;
 
-    @GetMapping("/allEmployee")
+    @GetMapping("/allEmployees")
     public ResponseEntity<List<Employee>> getAllEmployee(){
         return ResponseEntity.ok(service.getAllEmployees());
     }
@@ -31,17 +31,17 @@ public class Controller {
     }
 
     // Post End Points
-    @PostMapping("/employee")
+    @PostMapping("/createEmployee")
     public ResponseEntity<Employee> createEmployee(@RequestBody Employee employee){
         return ResponseEntity.ok(service.createEmployee(employee));
     }
 
-    @PostMapping("/role")
+    @PostMapping("/createRole")
     public ResponseEntity<Role> createRole(@RequestBody Role role){
         return ResponseEntity.ok(service.createRole(role));
     }
 
-    @PostMapping("/category")
+    @PostMapping("/createCategory")
     public ResponseEntity<Categories> createCategories(@RequestBody Categories categories){
         return ResponseEntity.ok(service.createCategories(categories));
     }
@@ -66,13 +66,13 @@ public class Controller {
     }
 
     // Get Expanses by Status
-    @GetMapping("/ExpanseByStatus")
-    public ResponseEntity<List<Expense>> getExpanseByStatus(@RequestParam String name) {
-        return ResponseEntity.ok(service.getExpanseByStatus(name));
+    @GetMapping("/expanseByStatus")
+    public ResponseEntity<List<Expense>> getExpanseByStatus(@RequestParam int statusId) {
+        return ResponseEntity.ok(service.getExpanseByStatus(statusId));
     }
 
     // Get Expanse Status with employee id and date range
-    @GetMapping("/ExpanseStatusByDate")
+    @GetMapping("/expanseStatusByDate")
     public ResponseEntity<List<Expense>> getExpensesStatus(
             @RequestParam Integer employeeId,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime date) {
@@ -88,9 +88,8 @@ public class Controller {
         try {
             String expenseId = request.get("expenseId");
             String statusId = request.get("status_id");
-            String statusName = request.get("status_name");
 
-            service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId),statusName);
+            service.updateExpenseStatus(Integer.parseInt(expenseId), Integer.parseInt(statusId));
             return ResponseEntity.ok("Status Updated Successfully");
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
@@ -98,7 +97,7 @@ public class Controller {
     }
 
     // Create Category Pkg
-    @PostMapping("/CreateCategoryPackage")
+    @PostMapping("/createCategoryPackage")
     public ResponseEntity<CategoryPackage> createCategoryPackage(@RequestBody CategoryPackage categoryPackage){
         try {
             return ResponseEntity.ok(service.addCategoryPackage(categoryPackage));
@@ -108,7 +107,7 @@ public class Controller {
     }
 
     // Create category Against Pkg
-    @PostMapping("/CreateCategoryAgainstPackage")
+    @PostMapping("/createCategoryAgainstPackage")
     public ResponseEntity<RoleCategoryPackage> createRoleCategoryPackage(@RequestBody RoleCategoryPackage roleCategoryPackage){
         try {
             return ResponseEntity.ok(service.addRoleCategoryPackage(roleCategoryPackage));
@@ -118,7 +117,7 @@ public class Controller {
     }
 
     // Validate Expanse
-    @PostMapping("/validate-expense")
+    @PostMapping("/validateExpense")
     public boolean validateExpense(@RequestBody ValidateExpenseRequest request) {
         try {
             return service.validateExpense(request.getRoleId(), request.getExpenseAmount());

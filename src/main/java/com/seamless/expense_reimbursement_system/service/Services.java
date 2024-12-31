@@ -58,45 +58,44 @@ public class Services {
     public ResponseEntity<Object> createExpense(int employeeId, Expense expense) {
 
         Employee employee = employeeRepository.findById(employeeId)
-                    .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
+                .orElseThrow(() -> new EntityNotFoundException("Employee not found with ID: " + employeeId));
 
         RoleCategoryPackage rcPkg = roleCategoryPackageRepository.findById(employee.getRole().getId())
-                    .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
+                .orElseThrow(() -> new EntityNotFoundException("No RoleCategoryPackage found for role ID: " + employee.getRole().getId()));
 
-        // get Category Pkg
+        // Get category package
         CategoryPackage cPkg = rcPkg.getCategoryPackage();
         int totalAvailedAmount = expenseRepository.findTotalExpensesByEmployeeId(employeeId);
         int remainingLimit = cPkg.getExpenseLimit() - totalAvailedAmount;
 
-        String statusName = (expense.getAmount() > cPkg.getExpenseLimit() || expense.getAmount() > remainingLimit)
-                ? "Rejected" : "Pending";
-
-        // Initialize Status class
-        ExpenseStatus newStatus = new ExpenseStatus();
-        newStatus.setStatus((byte) 1);
-
+        // Set employee and default values
         expense.setApprovalDate(null);
         expense.setEmployee(employee);
 
-        // If enter amount > Expense Limit against role
+        // Check if expense exceeds allowed limit for the role
         if (expense.getAmount() > cPkg.getExpenseLimit()) {
-            newStatus.setName(statusName);
-            expense.setStatus(expenseStatusRepository.save(newStatus));
-            ResponseEntity.ok(expenseRepository.save(expense));
+            ExpenseStatus rejectedStatus = expenseStatusRepository.findById(3)
+                    .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 3"));
+            expense.setStatus(rejectedStatus);
+            expenseRepository.save(expense);
             return ResponseEntity.badRequest().body("Expense amount exceeds the allowed limit for the role: " + employee.getRole().getName());
         }
 
-        // Validate if expense amount exceeds the remaining limit
+        // Check if expense exceeds the remaining limit
         if (expense.getAmount() > remainingLimit) {
-            newStatus.setName(statusName);
-            expense.setStatus(expenseStatusRepository.save(newStatus));
-            ResponseEntity.ok(expenseRepository.save(expense));
+            ExpenseStatus rejectedStatus = expenseStatusRepository.findById(3)
+                    .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 3"));
+            expense.setStatus(rejectedStatus);
+            expenseRepository.save(expense);
             return ResponseEntity.badRequest().body("Expense amount exceeds the remaining limit. You can only avail up to: " + remainingLimit);
         }
 
-        newStatus.setName(statusName);
-        expense.setStatus(expenseStatusRepository.save(newStatus));
-        return ResponseEntity.ok(expenseRepository.save(expense));
+        // Assign pending status 1
+        ExpenseStatus pendingStatus = expenseStatusRepository.findById(1)
+                .orElseThrow(() -> new EntityNotFoundException("Status not found with ID: 1"));
+        expense.setStatus(pendingStatus);
+        expenseRepository.save(expense);
+        return ResponseEntity.ok("Expense submitted successfully and is pending approval.");
     }
 
     // Getting list by Manager
@@ -105,11 +104,8 @@ public class Services {
     }
 
     // Get by status
-    public List<Expense> getExpanseByStatus(String name) {
-        if (name == null || name.isEmpty()) {
-            throw new IllegalArgumentException("Status name must not be null or empty");
-        }
-        return expenseRepository.findByStatusName(name);
+    public List<Expense> getExpanseByStatus(int statusId) {
+        return expenseRepository.findByStatusId(statusId);
     }
 
     // Get expanses status by employee id & date-range
@@ -121,17 +117,12 @@ public class Services {
     }
 
     // update expanse status
-    public void updateExpenseStatus(int expenseId, int statusId, String name) {
+    public void updateExpenseStatus(int expenseId, int statusId) {
         Expense expense = expenseRepository.findById(expenseId)
                 .orElseThrow(() -> new IllegalArgumentException("Expense not found with ID: " + expenseId));
 
         ExpenseStatus expenseStatus = expenseStatusRepository.findById(statusId)
                 .orElseThrow(() -> new IllegalArgumentException("Status not found with ID: " + statusId));
-
-        if (name != null && !name.isEmpty()) {
-            expenseStatus.setName(name);
-            expenseStatusRepository.save(expenseStatus);
-        }
 
         expense.setApprovalDate(LocalDateTime.now());
         expense.setStatus(expenseStatus);
@@ -160,4 +151,9 @@ public class Services {
         }
         return true;
     }
+
+    // Remaining work
+    // History endpoint sorted by category & by date
+
+
 }

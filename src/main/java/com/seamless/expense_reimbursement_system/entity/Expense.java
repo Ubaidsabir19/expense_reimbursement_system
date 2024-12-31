@@ -31,6 +31,10 @@ public class Expense {
     @JoinColumn(name = "status_id", referencedColumnName = "id")
     private ExpenseStatus status;
 
+//    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+//    @JoinColumn(name = "status_id", referencedColumnName = "id", nullable = false)
+//    private ExpenseStatus status;
+
     @Column(name = "submit_date")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private LocalDateTime submitDate;

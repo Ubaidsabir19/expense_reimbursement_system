@@ -12,15 +12,15 @@ public class ExpenseStatus {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "name", nullable = false, length = 50)
+    @Column(name = "name", length = 50)
     private String name;
 
     @Column(name = "status")
     private byte status;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "status", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Expense> expenses;
+//    @JsonIgnore
+//    @OneToOne(mappedBy = "status", fetch = FetchType.LAZY)
+//    private Expense expenses;
 
     // Getters and Setters
     public int getId() {
@@ -47,11 +47,11 @@ public class ExpenseStatus {
         this.status = status;
     }
 
-    public List<Expense> getExpenses() {
-        return expenses;
-    }
-
-    public void setExpenses(List<Expense> expenses) {
-        this.expenses = expenses;
-    }
+//    public Expense getExpenses() {
+//        return expenses;
+//    }
+//
+//    public void setExpenses(Expense expenses) {
+//        this.expenses = expenses;
+//    }
 }
