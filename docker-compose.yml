@@ -1,0 +1,30 @@
+version: '3.8'
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: seamless
+      MYSQL_DATABASE: expense_reimbursement_system
+    ports:
+      - "9090:9090"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  app:
+    build:
+      dockerfile: Dockerfile
+    container_name: spring-boot-app
+    restart: always
+    ports:
+      - "6060:6060"
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/expense_reimbursement_system
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: seamless
+
+volumes:
+  mysql_data:
